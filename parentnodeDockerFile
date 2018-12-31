@@ -1,0 +1,47 @@
+FROM ubuntu:18.10
+MAINTAINER Clemens Borys <cle@bor.dk>
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Make directories
+RUN mkdir /srv/sites
+RUN mkdir /srv/sites/apache
+RUN mkdir /srv/sites/apache/logs
+RUN chown -R $SUDO_USER:$SUDO_USER /srv/sites
+
+# Install all the things
+RUN apt-get -qq update \
+    && apt-get -qq upgrade
+RUN apt-get -qq install apt-utils
+RUN apt-get -qq --no-install-recommends install \
+    curl sudo zip logrotate \
+    apache2 apache2-utils ssl-cert \
+    libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring php7.2-zip php7.2-mysql php7.2-xmlrpc \
+    php-redis php-imagick php-igbinary php-msgpack \
+    redis \
+    mariadb-server \
+    ffmpeg \
+    wkhtmltopdf \
+    git
+
+# Apache2 configuration
+RUN a2enmod ssl \
+    && a2enmod rewrite \
+    && a2enmod headers \
+    # && a2ensite default \ # What is happening here?
+    && a2dissite 000-default \
+    && echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf \
+    && service apache2 restart
+
+# Trust git repositories even without certificate
+RUN git config --global http.sslverify false
+# Clone parentnode to srv/tools
+RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
+
+# Apache and MariaDB configuration
+RUN install_webserver_conf="Y" \
+    && export install_webserver_conf
+RUN install_email="cle@bor.dk" \
+    && export install_email
+# That doesn;t seem to work, this is skipped anyways...
+RUN /srv/tools/scripts/install_webserver_configuration-client.sh
