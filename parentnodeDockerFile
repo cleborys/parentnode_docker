@@ -4,9 +4,8 @@ MAINTAINER Clemens Borys <cle@bor.dk>
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Make directories
-RUN mkdir /srv/sites
-RUN mkdir /srv/sites/apache
-RUN mkdir /srv/sites/apache/logs
+RUN mkdir -p /srv/sites/apache/logs
+RUN mkdir /srv/sites/kbhff
 RUN chown -R $SUDO_USER:$SUDO_USER /srv/sites
 
 # Install all the things
@@ -24,24 +23,39 @@ RUN apt-get -qq --no-install-recommends install \
     wkhtmltopdf \
     git
 
-# Apache2 configuration
-RUN a2enmod ssl \
-    && a2enmod rewrite \
-    && a2enmod headers \
-    # && a2ensite default \ # What is happening here?
-    && a2dissite 000-default \
-    && echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf \
-    && service apache2 restart
-
 # Trust git repositories even without certificate
 RUN git config --global http.sslverify false
+
 # Clone parentnode to srv/tools
 RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
 
-# Apache and MariaDB configuration
-ENV install_webserver_conf Y
 ENV install_email cle@bor.dk
 
-RUN /srv/tools/scripts/install_webserver_configuration-client.sh
+# Apache2 configuration
+RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
+RUN echo "IncludeOptional /srv/sites/apache/*.conf" >> /etc/apache2/apache2.conf
+RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
+RUN a2enmod ssl
+RUN a2enmod rewrite
+RUN a2enmod headers
+RUN a2ensite default
+RUN a2dissite 000-default
+RUN sed -i "s/webmaster@localhost/${install_email}/;" /etc/apache2/sites-available/default.conf
+RUN cat /srv/tools/conf-client/php-apache2.ini > /etc/php/7.2/apache2/php.ini
+RUN cat /srv/tools/conf-client/php-cli.ini > /etc/php/7.2/cli/php.ini
+RUN cat /srv/tools/conf-client/apache.conf > /srv/sites/apache/apache.conf
+
+RUN sudo git clone https://github.com/kbhff/kbhff_dk /srv/sites/kbhff/kbhff_dk
+
+WORKDIR /srv/sites/kbhff/kbhff_dk
+RUN git submodule init
+RUN git submodule update
+
+ENV host_file_path=/etc/hosts
+ENV apache_file_path=/srv/sites/apache/apache.conf
+
+RUN echo "Include \"/srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf\"" >> "${apache_file_path}"
+
+RUN sudo echo "127.0.0.1 kbhff.local" >> ${host_file_path}
 
 CMD service apache2 start && tail -F /var/log/apache2/error.log
