@@ -43,3 +43,5 @@ ENV install_webserver_conf Y
 ENV install_email cle@bor.dk
 
 RUN /srv/tools/scripts/install_webserver_configuration-client.sh
+
+CMD service apache2 start && tail -F /var/log/apache2/error.log
