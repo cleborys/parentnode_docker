@@ -39,9 +39,7 @@ RUN git config --global http.sslverify false
 RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
 
 # Apache and MariaDB configuration
-RUN install_webserver_conf="Y" \
-    && export install_webserver_conf
-RUN install_email="cle@bor.dk" \
-    && export install_email
-# That doesn;t seem to work, this is skipped anyways...
+ENV install_webserver_conf Y
+ENV install_email cle@bor.dk
+
 RUN /srv/tools/scripts/install_webserver_configuration-client.sh
