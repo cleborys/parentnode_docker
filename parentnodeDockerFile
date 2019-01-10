@@ -32,18 +32,27 @@ RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
 ENV install_email cle@bor.dk
 
 # Apache2 configuration
+## Setup our default.conf (points to /srv/sites)
 RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
-RUN echo "IncludeOptional /srv/sites/apache/*.conf" >> /etc/apache2/apache2.conf
-RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
+RUN a2ensite default
+RUN a2dissite 000-default
+
 RUN a2enmod ssl
 RUN a2enmod rewrite
 RUN a2enmod headers
-RUN a2ensite default
-RUN a2dissite 000-default
+
+## This should be replaced by a sed line that amends default.conf, not apache2.conf. This will probably entail patching default.conf / submitting a pull request to janitor
+RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
 RUN sed -i "s/webmaster@localhost/${install_email}/;" /etc/apache2/sites-available/default.conf
-RUN cat /srv/tools/conf-client/php-apache2.ini > /etc/php/7.2/apache2/php.ini
-RUN cat /srv/tools/conf-client/php-cli.ini > /etc/php/7.2/cli/php.ini
-RUN cat /srv/tools/conf-client/apache.conf > /srv/sites/apache/apache.conf
+RUN cp /srv/tools/conf-client/php-apache2.ini /etc/php/7.2/apache2/php.ini
+RUN cp /srv/tools/conf-client/php-cli.ini /etc/php/7.2/cli/php.ini
+
+## Create virtual host
+ENV apache_file_path=/srv/sites/apache/kbhff.conf
+RUN cp /srv/tools/conf-client/apache.conf "${apache_file_path}"
+RUN echo "Include \"/srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf\"" >> "${apache_file_path}"
+RUN cp "${apache_file_path}" /etc/apache2/sites-available
+RUN a2ensite kbhff
 
 RUN sudo git clone https://github.com/kbhff/kbhff_dk /srv/sites/kbhff/kbhff_dk
 
@@ -52,10 +61,12 @@ RUN git submodule init
 RUN git submodule update
 
 ENV host_file_path=/etc/hosts
-ENV apache_file_path=/srv/sites/apache/apache.conf
-
-RUN echo "Include \"/srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf\"" >> "${apache_file_path}"
 
 RUN sudo echo "127.0.0.1 kbhff.local" >> ${host_file_path}
 
-CMD service apache2 start && tail -F /var/log/apache2/error.log
+# The configuration recently changed to expect janitor to be in this location; check this is "the way it's done" now
+RUN mkdir -p /srv/sites/parentnode
+WORKDIR /srv/sites/parentnode
+RUN git clone https://github.com/parentnode/janitor.git
+
+#CMD service apache2 start && tail -F /var/log/apache2/error.log
