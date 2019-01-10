@@ -1,7 +1,7 @@
 default: build run
 
 build:
-	sudo docker build - -t parentnode < parentnodeDockerFile
+	sudo docker build -t parentnode -f parentnodeDockerFile .
 
 run_options = -p 80:80 -t parentnode
 
