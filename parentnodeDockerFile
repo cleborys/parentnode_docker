@@ -14,7 +14,8 @@ RUN apt-get -qq install apt-utils
 RUN apt-get -qq --no-install-recommends install \
     curl sudo zip logrotate \
     apache2 apache2-utils ssl-cert \
-    libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring php7.2-zip php7.2-mysql php7.2-xmlrpc \
+    libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring \
+	php7.2-zip php7.2-mysql php7.2-xmlrpc php7.2-xml \
     php-redis php-imagick php-igbinary php-msgpack \
     redis \
     mariadb-server \
@@ -79,4 +80,6 @@ RUN a2ensite kbhff
 
 RUN sudo echo "127.0.0.1 kbhff.local" >> /etc/hosts
 
-#CMD service apache2 start && tail -F /var/log/apache2/error.log
+RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
+
+CMD service apache2 start && service mysql start && redis-server
