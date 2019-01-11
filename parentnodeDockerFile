@@ -25,11 +25,14 @@ RUN apt-get -qq --no-install-recommends install \
 # Trust git repositories even without certificate
 RUN git config --global http.sslverify false
 
-# Clone parentnode to srv/tools
+# Clone parentnode
 RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
+
+#Clone KBHFF
 RUN mkdir -p /srv/sites/kbhff
 RUN sudo git clone https://github.com/kbhff/kbhff_dk /srv/sites/kbhff/kbhff_dk
 
+#Get KBHFF submodules
 WORKDIR /srv/sites/kbhff/kbhff_dk
 RUN git submodule init
 RUN git submodule update
@@ -43,6 +46,7 @@ ENV install_email cle@bor.dk
 
 # Apache2 configuration
 ## Setup our default.conf (points to /srv/sites)
+# The following line can be safely deleted, Josh thinks:
 # RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
 # Josh: couldn't get the provided default.conf to work, here's (I think) a cleaner version
 COPY default.conf /etc/apache2/sites-available/default.conf
@@ -60,12 +64,16 @@ RUN cp /srv/tools/conf-client/php-apache2.ini /etc/php/7.2/apache2/php.ini
 RUN cp /srv/tools/conf-client/php-cli.ini /etc/php/7.2/cli/php.ini
 
 ## Create virtual host
+
+## <This can be safely deleted Josh thinks:
 # ENV apache_file_path=/srv/sites/apache/kbhff.conf
 # RUN cp /srv/tools/conf-client/apache.conf "${apache_file_path}"
 # RUN echo "Include \"/srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf\"" >> "${apache_file_path}"
 # RUN cp "${apache_file_path}" /etc/apache2/sites-available
 # RUN a2ensite kbhff
-# Josh: all the configuration of the KBHFF site actually takes place in this file, so I copy this one instead
+## />
+
+# Josh: all the configuration of the KBHFF site actually takes place in this file, so I copy this one instead of the above
 RUN cp /srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf /etc/apache2/sites-available/kbhff.conf
 RUN a2ensite kbhff
 
