@@ -17,8 +17,6 @@ RUN apt-get -qq --no-install-recommends install \
     libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring \
 	php7.2-zip php7.2-mysql php7.2-xmlrpc php7.2-xml \
     php-redis php-imagick php-igbinary php-msgpack \
-    redis \
-    mariadb-server \
     ffmpeg \
     wkhtmltopdf \
     git
@@ -51,12 +49,8 @@ ENV install_email cle@bor.dk
 # RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
 # Josh: couldn't get the provided default.conf to work, here's (I think) a cleaner version
 COPY default.conf /etc/apache2/sites-available/default.conf
-RUN a2ensite default
-RUN a2dissite 000-default
-
-RUN a2enmod ssl
-RUN a2enmod rewrite
-RUN a2enmod headers
+RUN a2ensite default && a2dissite 000-default
+RUN a2enmod ssl && a2enmod rewrite && a2enmod headers
 
 ## This should be replaced by a sed line that amends default.conf, not apache2.conf. This will probably entail patching default.conf / submitting a pull request to janitor
 RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
@@ -82,4 +76,6 @@ RUN sudo echo "127.0.0.1 kbhff.local" >> /etc/hosts
 
 RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
 
-CMD service apache2 start && service mysql start && redis-server
+EXPOSE 80
+
+CMD ["apachectl", "-D", "FOREGROUND"]

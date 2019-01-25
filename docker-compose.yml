@@ -1,0 +1,25 @@
+version: '3'
+services:
+  apache:
+    build:
+      context: .
+      dockerfile: parentnode-apache
+    ports:
+      - 80:80
+    networks:
+     - frontend
+     - backend
+  redis:
+    image: "redis:alpine"
+    networks:
+     - backend
+  mariadb:
+    image: "mariadb:latest"
+    environment:
+      MYSQL_ROOT_PASSWORD: "averysecurepassword"
+    networks:
+     - backend
+
+networks:
+  frontend:
+  backend:
