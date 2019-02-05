@@ -1,0 +1,11 @@
+--- ../git/kbhff_dk/ci/CodeIgniter-2.2.6/application/config/database.php	2019-01-27 08:35:37.848761337 -0800
++++ ../git/kbhff_dk/ci/CodeIgniter-2.2.6/application/config/database.php.new	2019-01-27 11:11:50.641309131 -0800
+@@ -42,7 +42,7 @@
+ $active_group = 'default';
+ $active_record = TRUE;
+ 
+-$db['default']['hostname'] = '127.0.0.1';
++$db['default']['hostname'] = 'db';
+ if(ENVIRONMENT == "development") {
+ 	$db['default']['username'] = 'kbhffdk';
+ 	$db['default']['password'] = 'localpass';

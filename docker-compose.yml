@@ -3,22 +3,28 @@ services:
   apache:
     build:
       context: .
-      dockerfile: parentnode-apache
+      dockerfile: apache/Dockerfile
     ports:
       - 80:80
     networks:
-     - frontend
-     - backend
+      #TODO: apache should have hostname kbhff.local
+      - frontend
+      - backend
+    volumes:
+      - ./git/kbhff_dk:/srv/sites/kbhff/kbhff_dk
   redis:
     image: "redis:alpine"
     networks:
-     - backend
-  mariadb:
+      - backend
+  db:
     image: "mariadb:latest"
     environment:
       MYSQL_ROOT_PASSWORD: "averysecurepassword"
+      MYSQL_DATABASE: "kbhff_dk"
+      MYSQL_USER: "kbhffdk"
+      MYSQL_PASSWORD: "localpass"
     networks:
-     - backend
+      - backend
 
 networks:
   frontend:

@@ -3,43 +3,34 @@ MAINTAINER Clemens Borys <cle@bor.dk>
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Make directories
-RUN mkdir -p /srv/sites/apache/logs
-RUN chown -R $SUDO_USER:$SUDO_USER /srv/sites
-
 # Install all the things
 RUN apt-get -qq update \
     && apt-get -qq upgrade
 RUN apt-get -qq install apt-utils
 RUN apt-get -qq --no-install-recommends install \
-    curl sudo zip logrotate \
+    curl zip logrotate \
     apache2 apache2-utils ssl-cert \
     libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring \
 	php7.2-zip php7.2-mysql php7.2-xmlrpc php7.2-xml \
     php-redis php-imagick php-igbinary php-msgpack \
     ffmpeg \
-    wkhtmltopdf \
-    git
+    wkhtmltopdf
 
-# Trust git repositories even without certificate
-RUN git config --global http.sslverify false
+# Make directories
+RUN mkdir -p /srv/sites/apache/logs
+RUN mkdir -p /srv/sites/parentnode
+RUN mkdir -p /srv/sites/kbhff/kbhff_dk
+RUN chown -R www-data:staff /srv/sites
 
 # Clone parentnode
-RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
-
-#Clone KBHFF
-RUN mkdir -p /srv/sites/kbhff
-RUN sudo git clone https://github.com/kbhff/kbhff_dk /srv/sites/kbhff/kbhff_dk
-
-#Get KBHFF submodules
-WORKDIR /srv/sites/kbhff/kbhff_dk
-RUN git submodule init
-RUN git submodule update
+COPY git/ubuntu_environment/ /srv/tools
 
 # The configuration recently changed to expect janitor to be in this location; check this is "the way it's done" now
-RUN mkdir -p /srv/sites/parentnode
-WORKDIR /srv/sites/parentnode
-RUN git clone https://github.com/parentnode/janitor.git
+COPY git/janitor /srv/sites/parentnode/janitor
+
+#Clone KBHFF: (this is now linked from outside the container as a volume)
+# RUN mkdir -p /srv/sites/kbhff
+# COPY git/kbhff_dk /srv/sites/kbhff/kbhff_dk
 
 ENV install_email cle@bor.dk
 
@@ -48,9 +39,9 @@ ENV install_email cle@bor.dk
 # The following line can be safely deleted, Josh thinks:
 # RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
 # Josh: couldn't get the provided default.conf to work, here's (I think) a cleaner version
-COPY default.conf /etc/apache2/sites-available/default.conf
-RUN a2ensite default && a2dissite 000-default
-RUN a2enmod ssl && a2enmod rewrite && a2enmod headers
+COPY apache/default.conf /etc/apache2/sites-available/default.conf
+RUN a2ensite default && a2dissite 000-default &&\
+	a2enmod ssl && a2enmod rewrite && a2enmod headers
 
 ## This should be replaced by a sed line that amends default.conf, not apache2.conf. This will probably entail patching default.conf / submitting a pull request to janitor
 RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
@@ -69,12 +60,10 @@ RUN cp /srv/tools/conf-client/php-cli.ini /etc/php/7.2/cli/php.ini
 ## />
 
 # Josh: all the configuration of the KBHFF site actually takes place in this file, so I copy this one instead of the above
-RUN cp /srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf /etc/apache2/sites-available/kbhff.conf
+COPY git/kbhff_dk/apache/httpd-vhosts.conf /etc/apache2/sites-available/kbhff.conf
 RUN a2ensite kbhff
 
-RUN sudo echo "127.0.0.1 kbhff.local" >> /etc/hosts
-
-RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
+RUN echo "127.0.0.1 kbhff.local" >> /etc/hosts
 
 EXPOSE 80
 

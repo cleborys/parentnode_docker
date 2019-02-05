@@ -1,0 +1,18 @@
+--- cache.class.php	2019-01-27 08:35:47.178838913 -0800
++++ cache.class.php.new	2019-02-04 20:38:17.402377611 -0800
+@@ -17,7 +17,7 @@
+ 			$this->cache_type = "redis";
+ 
+ 			$this->cache = new Redis();
+-			$this->cache->connect('127.0.0.1', 6379);
++			$this->cache->connect('redis', 6379);
+ 		}
+ 		else if(class_exists("Memcached")) {
+ 
+@@ -256,4 +256,4 @@
+ 	global $ccc;
+ 	return $ccc;
+ }
+-?>
+\ No newline at end of file
++?>
