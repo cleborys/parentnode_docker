@@ -4,9 +4,7 @@ MAINTAINER Clemens Borys <cle@bor.dk>
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Make directories
-RUN mkdir /srv/sites
-RUN mkdir /srv/sites/apache
-RUN mkdir /srv/sites/apache/logs
+RUN mkdir -p /srv/sites/apache/logs
 RUN chown -R $SUDO_USER:$SUDO_USER /srv/sites
 
 # Install all the things
@@ -16,7 +14,8 @@ RUN apt-get -qq install apt-utils
 RUN apt-get -qq --no-install-recommends install \
     curl sudo zip logrotate \
     apache2 apache2-utils ssl-cert \
-    libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring php7.2-zip php7.2-mysql php7.2-xmlrpc \
+    libapache2-mod-php php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-dev php7.2-mbstring \
+	php7.2-zip php7.2-mysql php7.2-xmlrpc php7.2-xml \
     php-redis php-imagick php-igbinary php-msgpack \
     redis \
     mariadb-server \
@@ -24,22 +23,63 @@ RUN apt-get -qq --no-install-recommends install \
     wkhtmltopdf \
     git
 
-# Apache2 configuration
-RUN a2enmod ssl \
-    && a2enmod rewrite \
-    && a2enmod headers \
-    # && a2ensite default \ # What is happening here?
-    && a2dissite 000-default \
-    && echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf \
-    && service apache2 restart
-
 # Trust git repositories even without certificate
 RUN git config --global http.sslverify false
-# Clone parentnode to srv/tools
+
+# Clone parentnode
 RUN sudo git clone https://github.com/parentnode/ubuntu_environment /srv/tools
 
-# Apache and MariaDB configuration
-ENV install_webserver_conf Y
+#Clone KBHFF
+RUN mkdir -p /srv/sites/kbhff
+RUN sudo git clone https://github.com/kbhff/kbhff_dk /srv/sites/kbhff/kbhff_dk
+
+#Get KBHFF submodules
+WORKDIR /srv/sites/kbhff/kbhff_dk
+RUN git submodule init
+RUN git submodule update
+
+# The configuration recently changed to expect janitor to be in this location; check this is "the way it's done" now
+RUN mkdir -p /srv/sites/parentnode
+WORKDIR /srv/sites/parentnode
+RUN git clone https://github.com/parentnode/janitor.git
+
 ENV install_email cle@bor.dk
 
-RUN /srv/tools/scripts/install_webserver_configuration-client.sh
+# Apache2 configuration
+## Setup our default.conf (points to /srv/sites)
+# The following line can be safely deleted, Josh thinks:
+# RUN cat /srv/tools/conf-client/default.conf > /etc/apache2/sites-available/default.conf
+# Josh: couldn't get the provided default.conf to work, here's (I think) a cleaner version
+COPY default.conf /etc/apache2/sites-available/default.conf
+RUN a2ensite default
+RUN a2dissite 000-default
+
+RUN a2enmod ssl
+RUN a2enmod rewrite
+RUN a2enmod headers
+
+## This should be replaced by a sed line that amends default.conf, not apache2.conf. This will probably entail patching default.conf / submitting a pull request to janitor
+RUN echo "ServerName ${HOSTNAME}" >> /etc/apache2/apache2.conf
+RUN sed -i "s/webmaster@localhost/${install_email}/;" /etc/apache2/sites-available/default.conf
+RUN cp /srv/tools/conf-client/php-apache2.ini /etc/php/7.2/apache2/php.ini
+RUN cp /srv/tools/conf-client/php-cli.ini /etc/php/7.2/cli/php.ini
+
+## Create virtual host
+
+## <This can be safely deleted Josh thinks:
+# ENV apache_file_path=/srv/sites/apache/kbhff.conf
+# RUN cp /srv/tools/conf-client/apache.conf "${apache_file_path}"
+# RUN echo "Include \"/srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf\"" >> "${apache_file_path}"
+# RUN cp "${apache_file_path}" /etc/apache2/sites-available
+# RUN a2ensite kbhff
+## />
+
+# Josh: all the configuration of the KBHFF site actually takes place in this file, so I copy this one instead of the above
+RUN cp /srv/sites/kbhff/kbhff_dk/apache/httpd-vhosts.conf /etc/apache2/sites-available/kbhff.conf
+RUN a2ensite kbhff
+
+RUN sudo echo "127.0.0.1 kbhff.local" >> /etc/hosts
+
+RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
+
+CMD service apache2 start && service mysql start && redis-server

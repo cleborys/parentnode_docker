@@ -1,6 +1,7 @@
 Dockerfile to install parentnode and run the kbhff server
 
 Might require sudo:
- - `docker build - < parentNodeDockerFile` to build a docker image
+ - `make build` to build a docker image
  - `docker images` to view a list of all present images
- - `docker run -i -t IMAGENAME` to connect to a specific image
+ - `make run` to run the image
+ - `make irun` to launch a shell in the image: you will need to first disable the last 'CMD' line of the docker file. If you want to access the website, you will then need to manually start apache, mysql and redis using `service apache2 start` and `service mysql start` and `redis-server`
