@@ -12,3 +12,5 @@
    - If we successfully manage to get parentnode to update their apache configuration, this will be easier
  - conf-client/php-cli.ini and conf-client/php-apache2.ini seem to be identical; if docker is accepted, can we drop one of them and copy it to both locations?
  - Use volumes (different from the `volume` command!) to persist the database: https://docs.docker.com/storage/volumes
+   - I think this is already happening
+ - Patch the setup procedure so that the correct db names etc. are filled by default

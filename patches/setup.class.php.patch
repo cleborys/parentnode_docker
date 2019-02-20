@@ -1,0 +1,43 @@
+--- setup.class.php	2019-02-20 15:10:35.523286491 -0500
++++ setup.class.php.new	2019-02-20 15:08:49.565504689 -0500
+@@ -561,7 +561,7 @@
+ 			if(
+ 				$this->get("system", "os") == "win"
+ 				|| 
+-				$this->recurseFilePermissions(PROJECT_PATH, $this->get("system", "apache_user"), $this->get("system", "deploy_user"), 0777)
++				$this->recurseFilePermissions(PROJECT_PATH, $this->get("system", "apache_user"), $this->get("system", "apache_user"), 0777)
+ 			) {
+ 				return true;
+ 			};
+@@ -587,7 +587,14 @@
+ 					}
+ 				}
+ 
+-				if(!@chown($filepath, $user) || !@chgrp($filepath, $group) || !@chmod($filepath, $permissions)) {
++				if(!@chown($filepath, $user)){
++					echo "<pre>Failed to chown `" . $filepath . "` to `" . $user . "`</pre>";
++					return false;
++				} elseif(!@chgrp($filepath, $group)){
++					echo "<pre>Failed to chgrp `" . $filepath . "` to `" . $group . "`</pre>";
++					return false;
++				} elseif(!@chmod($filepath, $permissions)) {
++					echo "<pre>Failed to chmod `" . $filepath . "` to `" . $permissions . "`</pre>";
+ 					return false;
+ 				}
+ 
+@@ -2133,13 +2140,13 @@
+ 				}
+ 				else if($this->recurseFilePermissions(PROJECT_PATH,
+ 					$this->get("system", "apache_user"),
+-					$this->get("system", "deploy_user"),
++					$this->get("system", "apache_user"),
+ 					0777)
+ 				) {
+ 					$tasks["completed"][] = "File permissions updated for development environment";
+ 				}
+ 				else {
+-					$tasks["failed"][] = "File permissions could not be updated for development environment";
++					$tasks["failed"][] = "File permissions could not be updated for development environment (User: `" . $this->get("system", "apache_user") . "` Group: `" . $this->get("system", "apache_user") . "`)";
+ 					return $tasks;
+ 				}
+ 

@@ -20,7 +20,6 @@ RUN apt-get -qq --no-install-recommends install \
 RUN mkdir -p /srv/sites/apache/logs
 RUN mkdir -p /srv/sites/parentnode
 RUN mkdir -p /srv/sites/kbhff/kbhff_dk
-RUN chown -R www-data:staff /srv/sites
 
 # Clone parentnode
 COPY git/ubuntu_environment/ /srv/tools
@@ -29,8 +28,8 @@ COPY git/ubuntu_environment/ /srv/tools
 COPY git/janitor /srv/sites/parentnode/janitor
 
 #Clone KBHFF: (this is now linked from outside the container as a volume)
-# RUN mkdir -p /srv/sites/kbhff
-# COPY git/kbhff_dk /srv/sites/kbhff/kbhff_dk
+COPY git/kbhff_dk /srv/sites/kbhff/kbhff_dk
+RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
 
 ENV install_email cle@bor.dk
 

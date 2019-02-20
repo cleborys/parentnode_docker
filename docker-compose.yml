@@ -10,8 +10,6 @@ services:
       #TODO: apache should have hostname kbhff.local
       - frontend
       - backend
-    volumes:
-      - ./git/kbhff_dk:/srv/sites/kbhff/kbhff_dk
   redis:
     image: "redis:alpine"
     networks:
@@ -23,6 +21,8 @@ services:
       MYSQL_DATABASE: "kbhff_dk"
       MYSQL_USER: "kbhffdk"
       MYSQL_PASSWORD: "localpass"
+    volumes:
+      - ./git/kbhff_dk_cleaned.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       - backend
 
