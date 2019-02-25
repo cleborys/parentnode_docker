@@ -29,6 +29,13 @@ Ideally in the future the script will autofill these values, but for now they ne
 
 ## Troubleshooting
 
+ - If you get an error message similar to
+
+```
+2018/02/25 00:41:13 Error: start: Cannot start container ba9864d582689637dd87aeace7478b8c7200d209102b8cb6d54702059eeddc5a: Port already in use: 80
+```
+
+then you probably already have apache running on your local machine. You can either stop apache before starting docker, or make apache run on a non-standard port (i.e. not 80), or make docker run on a non-standard port by altering the port binding in the docker-compose.yml file. If you use the last of these options, then remember that connecting to `kbhff.local` won't work, as you'll need to specify whichever non-standard port you chose.
  - Run `sudo docker-compose down` to stop the server and remove all images. Add the flag `-v` to also remove all volumes and networks (which will in particular wipe the database).
  - Run `sudo docker exec -it parentnode_docker_apache_1 bash` to log in to the apache image as root (similarly for any of the other images).
  - If you run into problems, try running `sudo docker-compose rm -v` to remove all your volumes, then rebuild. (For example, if you change the passwords for the database, then you need to do this to be able to use the new password.)

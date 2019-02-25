@@ -7,7 +7,6 @@ services:
     ports:
       - 80:80
     networks:
-      #TODO: apache should have hostname kbhff.local
       - frontend
       - backend
   redis:
