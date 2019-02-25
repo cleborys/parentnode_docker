@@ -1,0 +1,30 @@
+version: '3'
+services:
+  apache:
+    build:
+      context: .
+      dockerfile: apache/Dockerfile
+    ports:
+      - 80:80
+    networks:
+      - frontend
+      - backend
+  redis:
+    image: "redis:alpine"
+    networks:
+      - backend
+  db:
+    image: "mariadb:latest"
+    environment:
+      MYSQL_ROOT_PASSWORD: "averysecurepassword"
+      MYSQL_DATABASE: "kbhff_dk"
+      MYSQL_USER: "kbhffdk"
+      MYSQL_PASSWORD: "localpass"
+    volumes:
+      - ./git/kbhff_dk_cleaned.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
