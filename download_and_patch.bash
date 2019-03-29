@@ -5,10 +5,6 @@ if [ ! -f git/kbhff_dk_cleaned.sql ]; then
 	unzip git/kbhff_dk_cleaned.sql.zip -d git
 fi
 
-if [ ! -d git/janitor ]; then
-	git clone https://github.com/parentnode/janitor.git git/janitor
-fi
-
 if [ ! -d git/kbhff_dk ]; then
 	git clone https://github.com/kbhff/kbhff_dk.git git/kbhff_dk
 	pushd git/kbhff_dk
