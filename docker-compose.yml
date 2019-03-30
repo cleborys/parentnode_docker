@@ -24,6 +24,8 @@ services:
       - ./git/kbhff_dk_cleaned.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       - backend
+    ports:
+      - "54321:3306"
 
 networks:
   frontend:
