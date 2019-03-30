@@ -24,8 +24,6 @@ RUN mkdir -p /srv/sites/kbhff/kbhff_dk
 # Clone parentnode
 COPY git/ubuntu_environment/ /srv/tools
 
-COPY git/janitor /srv/sites/parentnode/janitor
-
 #Clone KBHFF:
 COPY git/kbhff_dk /srv/sites/kbhff/kbhff_dk
 RUN chown -R www-data:staff /srv/sites/kbhff/kbhff_dk
