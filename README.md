@@ -37,6 +37,6 @@ Ideally in the future the script will autofill these values, but for now they ne
 
 then you probably already have apache running on your local machine. You can either stop apache before starting docker, or make apache run on a non-standard port (i.e. not 80), or make docker run on a non-standard port by altering the port binding in the docker-compose.yml file. If you use the last of these options, then remember that connecting to `kbhff.local` won't work, as you'll need to specify whichever non-standard port you chose.
  - Run `sudo docker-compose down` to stop the server and remove all images. Add the flag `-v` to also remove all volumes and networks (which will in particular wipe the database).
- - Run `sudo docker exec -it parentnode_docker_apache_1 bash` to log in to the apache image as root (similarly for any of the other images).
+ - Run `sudo docker exec -it parentnodedocker_apache_1 bash` to log in to the apache image as root (similarly for any of the other images).
  - If you run into problems, try running `sudo docker-compose rm -v` to remove all your volumes, then rebuild. (For example, if you change the passwords for the database, then you need to do this to be able to use the new password.)
  - If you want to re-run the janitor setup process, it seems sufficient to re-create the apache image using `docker-compose build` (you might need to use `--no-cache` if you haven't altered the code since the last build).
