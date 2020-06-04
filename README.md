@@ -12,6 +12,7 @@ You'll need:
  - Before building, run `download_and_patch.bash` to clone the git repositories and patch all the files that need patching for the website to work.
  - Run `sudo docker-compose build` to build the server (currently needs to be done after changing any files). Add the flag `--no-cache` to not use the build cache if necessary.
  - Run `sudo docker-compose up` to start the server.
+ - The very first time you run the server, you should comment out the line `COPY apache/connect_db.php /srv/sites/kbhff/kbhff_dk/theme/config/connect_db.php`; this will allow you to go through the setting up Janitor flow.
 
 You can then go to http://kbhff.local/janitor/admin/setup to set up janitor using the settings below.
 
