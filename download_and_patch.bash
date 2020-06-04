@@ -1,7 +1,7 @@
 mkdir -p git
 
 if [ ! -f git/kbhff_dk_cleaned.sql ]; then
-	wget -nc https://github.com/kbhff/udvikler_kbhff_dk/raw/master/theme/www/assets/kbhff_dk_cleaned.sql.zip -O git/kbhff_dk_cleaned.sql.zip
+	wget -nc https://github.com/kbhff/udvikler_kbhff_dk/blob/master/theme/www/assets/kbhff_dk_cleaned.sql.zip?raw=true
 	unzip git/kbhff_dk_cleaned.sql.zip -d git
 fi
 
