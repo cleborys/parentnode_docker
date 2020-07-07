@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:bionic
 MAINTAINER Joshua Hunt <joshua.edward.hunt@gmail.com>
 
 ENV DEBIAN_FRONTEND=noninteractive
